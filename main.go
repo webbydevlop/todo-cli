@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,8 +11,8 @@ import (
 
 // Task представляет собой структуру задачи
 type Task struct {
-	ID    int
-	Title string
+	ID    int    `json:"id"`
+	Title string `json:"title"`
 }
 
 // Tasks — это срез (список) задач
@@ -19,6 +20,10 @@ var Tasks []Task
 
 func main() {
 	fmt.Println("Добро пожаловать в To-Do List!")
+
+	// Загружаем задачи из файла при запуске
+	loadTasks()
+
 	for {
 		printMenu()
 		handleInput()
@@ -53,9 +58,10 @@ func handleInput() {
 	case 2:
 		addTask()
 	case 3:
-		fmt.Println("Удаление задачи...") // Пока заглушка
+		deleteTask()
 	case 4:
 		fmt.Println("Выход...")
+		saveTasks() // Сохраняем задачи перед выходом
 		os.Exit(0)
 	default:
 		fmt.Println("Неверный выбор. Попробуйте снова.")
@@ -88,4 +94,66 @@ func addTask() {
 
 	Tasks = append(Tasks, task)
 	fmt.Println("Задача добавлена!")
+}
+
+// deleteTask удаляет задачу по ID
+func deleteTask() {
+	if len(Tasks) == 0 {
+		fmt.Println("Задач нет.")
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Введите ID задачи для удаления: ")
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	id, err := strconv.Atoi(input) // Преобразуем ввод в число
+	if err != nil {
+		fmt.Println("Неверный ID. Попробуйте снова.")
+		return
+	}
+
+	// Ищем задачу по ID
+	for i, task := range Tasks {
+		if task.ID == id {
+			// Удаляем задачу из среза
+			Tasks = append(Tasks[:i], Tasks[i+1:]...)
+			fmt.Println("Задача удалена!")
+			return
+		}
+	}
+
+	fmt.Println("Задача с таким ID не найдена.")
+}
+
+// saveTasks сохраняет задачи в файл
+func saveTasks() {
+	file, err := os.Create("tasks.json")
+	if err != nil {
+		fmt.Println("Ошибка при сохранении задач:", err)
+		return
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ") // Добавляем форматирование для читаемости
+	if err := encoder.Encode(Tasks); err != nil {
+		fmt.Println("Ошибка при сохранении задач:", err)
+	}
+}
+
+// loadTasks загружает задачи из файла
+func loadTasks() {
+	file, err := os.Open("tasks.json")
+	if err != nil {
+		// Если файл не существует, просто возвращаемся
+		return
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&Tasks); err != nil {
+		fmt.Println("Ошибка при загрузке задач:", err)
+	}
 }
