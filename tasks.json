@@ -1,14 +1,27 @@
 [
   {
     "id": 1,
-    "title": "Посмотреть мультики"
+    "title": "Посмотреть мультики",
+    "completed": false
   },
   {
     "id": 2,
-    "title": "Почистить зубы"
+    "title": "Почистить зубы",
+    "completed": true
   },
   {
     "id": 3,
-    "title": "Попить чай"
+    "title": "Попить чай",
+    "completed": true
+  },
+  {
+    "id": 4,
+    "title": "аДописать код",
+    "completed": false
+  },
+  {
+    "id": 5,
+    "title": "Выключить свет",
+    "completed": false
   }
 ]

@@ -38,7 +38,8 @@ func printMenu() {
 	fmt.Println("2. Добавить задачу")
 	fmt.Println("3. Удалить задачу")
 	fmt.Println("4. Отметить задачу как выполненную")
-	fmt.Println("5. Выйти")
+	fmt.Println("5. Поиск задач по названию")
+	fmt.Println("6. Выйти")
 }
 
 // handleInput обрабатывает ввод пользователя
@@ -64,6 +65,8 @@ func handleInput() {
 	case 4:
 		completeTask()
 	case 5:
+		searchTasks()
+	case 6:
 		fmt.Println("Выход...")
 		saveTasks() // Сохраняем задачи перед выходом
 		os.Exit(0)
@@ -165,6 +168,35 @@ func completeTask() {
 	}
 
 	fmt.Println("Задача с таким ID не найдена.")
+}
+
+// searchTasks ищет задачи по ключевому слову
+func searchTasks() {
+	if len(Tasks) == 0 {
+		fmt.Println("Задач нет.")
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Введите ключевое слово для поиска: ")
+	keyword, _ := reader.ReadString('\n')
+	keyword = strings.TrimSpace(keyword)
+
+	found := false
+	for _, task := range Tasks {
+		if strings.Contains(strings.ToLower(task.Title), strings.ToLower(keyword)) {
+			status := " "
+			if task.Completed {
+				status = "✓"
+			}
+			fmt.Printf("[%d] %s %s\n", task.ID, status, task.Title)
+			found = true
+		}
+	}
+
+	if !found {
+		fmt.Println("Задачи не найдены.")
+	}
 }
 
 // saveTasks сохраняет задачи в файл
