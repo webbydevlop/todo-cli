@@ -11,8 +11,9 @@ import (
 
 // Task представляет собой структуру задачи
 type Task struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	Completed bool   `json:"completed"`
 }
 
 // Tasks — это срез (список) задач
@@ -36,7 +37,8 @@ func printMenu() {
 	fmt.Println("1. Показать задачи")
 	fmt.Println("2. Добавить задачу")
 	fmt.Println("3. Удалить задачу")
-	fmt.Println("4. Выйти")
+	fmt.Println("4. Отметить задачу как выполненную")
+	fmt.Println("5. Выйти")
 }
 
 // handleInput обрабатывает ввод пользователя
@@ -60,6 +62,8 @@ func handleInput() {
 	case 3:
 		deleteTask()
 	case 4:
+		completeTask()
+	case 5:
 		fmt.Println("Выход...")
 		saveTasks() // Сохраняем задачи перед выходом
 		os.Exit(0)
@@ -76,7 +80,11 @@ func showTasks() {
 	}
 
 	for _, task := range Tasks {
-		fmt.Printf("[%d] %s\n", task.ID, task.Title)
+		status := " "
+		if task.Completed {
+			status = "✓"
+		}
+		fmt.Printf("[%d] %s %s\n", task.ID, status, task.Title)
 	}
 }
 
@@ -88,8 +96,9 @@ func addTask() {
 	title = strings.TrimSpace(title)
 
 	task := Task{
-		ID:    len(Tasks) + 1, // ID задачи = количество задач + 1
-		Title: title,
+		ID:        len(Tasks) + 1, // ID задачи = количество задач + 1
+		Title:     title,
+		Completed: false, // По умолчанию задача не выполнена
 	}
 
 	Tasks = append(Tasks, task)
@@ -120,6 +129,37 @@ func deleteTask() {
 			// Удаляем задачу из среза
 			Tasks = append(Tasks[:i], Tasks[i+1:]...)
 			fmt.Println("Задача удалена!")
+			return
+		}
+	}
+
+	fmt.Println("Задача с таким ID не найдена.")
+}
+
+// completeTask отмечает задачу как выполненную
+func completeTask() {
+	if len(Tasks) == 0 {
+		fmt.Println("Задач нет.")
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Введите ID задачи для отметки как выполненной: ")
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+
+	id, err := strconv.Atoi(input) // Преобразуем ввод в число
+	if err != nil {
+		fmt.Println("Неверный ID. Попробуйте снова.")
+		return
+	}
+
+	// Ищем задачу по ID
+	for i, task := range Tasks {
+		if task.ID == id {
+			// Отмечаем задачу как выполненную
+			Tasks[i].Completed = true
+			fmt.Println("Задача отмечена как выполненная!")
 			return
 		}
 	}
